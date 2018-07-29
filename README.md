@@ -119,3 +119,29 @@ data:
     Success: true/false,    // 布尔，指注册是否成功
     Msg: "注册成功|失败|用户名重复等",        // 字符串，指注册返回信息
 }
+```
+
+---
+
+
+页面列表查询
+
+```
+url: '/Page/GetList'
+type: 'get'
+data: null
+```
+
+返回数据：
+
+```
+[
+    {
+        SiteName: '站点A',    // 站点名
+        SiteId: '123',        // 站点id
+        PageName: '页面名',    // 页面名
+        PageId: '456',        // 页面id
+        PageUrl: 'http://www.baidu.com'    // 页面链接
+    }
+]
+```

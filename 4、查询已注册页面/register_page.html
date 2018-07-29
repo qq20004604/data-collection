@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+    <title>埋点系统（用户注册）</title>
+    <style>
+        * {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+        .row {
+            height: 30px;
+            line-height: 30px;
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        #load {
+            margin-left: 35px;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #000;
+        }
+
+    </style>
+</head>
+<body>
+<div id="app">
+
+</div>
+
+<script id="level-user" type="text/html">
+    <div>
+        <div class="row">
+            <button id="load">查询已注册页面</button>
+        </div>
+    </div>
+    <table>
+        <thead>
+        <tr>
+            <td>站点名</td>
+            <td>站点id</td>
+            <td>页面名</td>
+            <td>页面id</td>
+            <td>页面链接</td>
+        </tr>
+        </thead>
+        <tbody id="tbody">
+
+        </tbody>
+    </table>
+</script>
+
+<script>
+    const Get = function (url, data) {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: url,
+                type: 'get',
+                data: data
+            }).then(result => {
+                if (result.IsSuccessed) {
+                    console.log('%c%s', 'color:green', url, result);
+                    resolve(result.data)
+                } else {
+                    console.log('%c%s', 'color:red', url, result);
+                    reject(result.Message)
+                }
+            }).catch(err => {
+                console.log('%c%s', 'color:red', url, err);
+                reject(err ? err : '内部错误')
+            })
+        })
+    }
+    const userInit = function (list) {
+        const $tbody = $("#tbody");
+        list.forEach((item, i) => {
+            let dom = $(`<tr>
+            <td>${item.SiteName}</td>
+            <td>${item.SiteId}</td>
+            <td>${item.PageName}</td>
+            <td>${item.PageId}</td>
+            <td>${item.PageUrl}</td>
+        </tr>`);
+            $tbody.append(dom)
+        })
+    }
+    $(function () {
+        // 套用用户注册模板
+        const $Container = $("#app");
+        const $levelUser = $("#level-user");
+        $Container.html($levelUser.html());
+        $("#load").click(() => {
+            Get('/Page/GetList').then(result => {
+                if (result.list.length === 0) {
+                    alert('你没有注册任何页面');
+                } else {
+                    userInit(result.list);
+                }
+            }).catch(err => {
+                alert(err + '，请刷新页面重试')
+            })
+        })
+        // userInit([
+        //     {
+        //         SiteName: '站点A',
+        //         SiteId: '123',
+        //         PageName: '页面名',
+        //         PageId: '456',
+        //         PageUrl: 'http://www.baidu.com'
+        //     }
+        // ]);
+
+    })
+</script>
+
+</body>
+</html>

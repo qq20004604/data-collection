@@ -181,24 +181,18 @@
         const $levelUser = $("#level-user");
         $Container.html('加载中。。。');
         $Container.html($levelUser.html());
-        userInit([
-            {
-                name: '网站名',
-                id: 123
-            }
-        ]);
 
-        // Get('/Site/Getlist').then(result => {
-        //     if (result.list.length === 0) {
-        //         alert('请先注册网站，才能注册页面');
-        //         $Container.html('页面加载失败');
-        //     } else {
-        //         $Container.html($levelUser.html());
-        //         userInit(result.list);
-        //     }
-        // }).catch(err => {
-        //     alert(err + '，请刷新页面重试')
-        // })
+        Get('/Site/Getlist').then(result => {
+            if (result.list.length === 0) {
+                alert('请先注册网站，才能注册页面');
+                $Container.html('页面加载失败');
+            } else {
+                $Container.html($levelUser.html());
+                userInit(result.list);
+            }
+        }).catch(err => {
+            alert(err + '，请刷新页面重试')
+        })
     })
 </script>
 
