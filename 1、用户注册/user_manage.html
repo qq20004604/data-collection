@@ -113,7 +113,12 @@
         const $mobile = $("#mobile");
         const $qq = $("#qq");
 
+        let _submitting = false;
+        let _success = false;
         $("#register").unbind().click(() => {
+            if (_success) {
+                alert("已经注册成功啦，不要再注册了");
+            }
             let account = $account.val();
             let password = $password.val();
             let mobile = $mobile.val();
@@ -125,15 +130,25 @@
             if (account.length > 20 || password.length > 20 || mobile.length > 20 || qq.length > 20) {
                 return alert('每一项最长20位');
             }
+            if (_submitting) {
+                return;
+            }
+            _submitting = true;
             Post('/User/Add', {
                 Account: account,
                 Password: password,
                 Mobile: mobile,
                 QQ: qq
             }).then(result => {
-                console.log(result)
-                alert('成功')
+                if (result.Success) {
+                    _success = true;
+                    alert(result.Msg)
+                } else {
+                    _submitting = false;
+                    alert(result.Msg)
+                }
             }).catch(err => {
+                _submitting = false;
                 alert(err)
             })
         })

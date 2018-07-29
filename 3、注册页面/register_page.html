@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+    <title>埋点系统（用户注册）</title>
+    <style>
+        * {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+        .row {
+            height: 30px;
+            line-height: 30px;
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .label {
+            display: inline-block;
+            height: 30px;
+            line-height: 30px;
+            font-weight: bold;
+            width: 150px;
+            text-align: right;
+            vertical-align: top;
+        }
+
+        .input {
+            height: 30px;
+            line-height: 30px;
+            width: 300px;
+            border: 1px solid #666;
+            border-radius: 7px;
+            padding: 0 20px;
+            vertical-align: top;
+        }
+
+        .input:focus {
+            outline: none;
+        }
+
+        #register {
+            margin-left: 35px;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+
+</div>
+
+<script id="level-user" type="text/html">
+    <div>
+        <div class="row">
+            <label>
+                <span class="label">页面所属站点：</span>
+                <select type="text" class="input" id="sites">
+                </select>
+            </label>
+        </div>
+        <div class="row">
+            <label>
+                <span class="label">页面名：</span>
+                <input type="text" class="input" id="page_name">
+            </label>
+        </div>
+        <div class="row">
+            <label>
+                <span class="label">页面链接：</span>
+                <input type="text" class="input" id="page_url">
+            </label>
+        </div>
+        <div class="row">
+            <button id="register">注册</button>
+        </div>
+    </div>
+</script>
+
+<script>
+    const Get = function (url, data) {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: url,
+                type: 'get',
+                data: data
+            }).then(result => {
+                if (result.IsSuccessed) {
+                    console.log('%c%s', 'color:green', url, result);
+                    resolve(result.data)
+                } else {
+                    console.log('%c%s', 'color:red', url, result);
+                    reject(result.Message)
+                }
+            }).catch(err => {
+                console.log('%c%s', 'color:red', url, err);
+                reject(err ? err : '内部错误')
+            })
+        })
+    }
+    const Post = function (url, data) {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: data
+            }).then(result => {
+                if (result.IsSuccessed) {
+                    console.log('%c%s', 'color:green', url, result);
+                    resolve(result.data)
+                } else {
+                    console.log('%c%s', 'color:red', url, result);
+                    reject(result.Message)
+                }
+            }).catch(err => {
+                console.log('%c%s', 'color:red', url, err);
+                reject(err ? err : '内部错误')
+            })
+        })
+    }
+
+    const userInit = function (list) {
+        const $sites = $("#sites");
+        const $pageName = $("#page_name");
+        const $pageUrl = $("#page_url");
+        list.forEach((item, i) => {
+            let dom = $(`<option value="${item.id}">${item.name}</option>`);
+            $sites.append(dom)
+        })
+
+        let _submitting = false;
+        let _success = false;
+
+        $("#register").unbind().click(() => {
+            if (_success) {
+                alert("已经注册成功啦，如果还需要注册页面，请刷新");
+            }
+            let pageName = $pageName.val();
+            let pageUrl = $pageUrl.val();
+            let site = $sites.val();
+            if (!pageName || !pageUrl || !site) {
+                return alert('你有信息未填写，请填写先');
+            }
+
+            if (pageName.length > 20) {
+                return alert('页面名最长20个字符');
+            } else if (pageUrl.length > 200) {
+                return alert('页面链接最长200个字符');
+            }
+            if (_submitting) {
+                return;
+            }
+            _submitting = true;
+            Post('/Page/Add', {
+                PageName: pageName,
+                PageUrl: pageUrl,
+                Site: site
+            }).then(result => {
+                if (result.Success) {
+                    _success = true;
+                    alert(result.Msg)
+                } else {
+                    _submitting = false;
+                    alert(result.Msg)
+                }
+            }).catch(err => {
+                _submitting = false;
+                alert(err)
+            })
+        })
+    }
+    $(function () {
+        // 套用用户注册模板
+        const $Container = $("#app");
+        const $levelUser = $("#level-user");
+        $Container.html('加载中。。。');
+        $Container.html($levelUser.html());
+        userInit([
+            {
+                name: '网站名',
+                id: 123
+            }
+        ]);
+
+        // Get('/Site/Getlist').then(result => {
+        //     if (result.list.length === 0) {
+        //         alert('请先注册网站，才能注册页面');
+        //         $Container.html('页面加载失败');
+        //     } else {
+        //         $Container.html($levelUser.html());
+        //         userInit(result.list);
+        //     }
+        // }).catch(err => {
+        //     alert(err + '，请刷新页面重试')
+        // })
+    })
+</script>
+
+</body>
+</html>

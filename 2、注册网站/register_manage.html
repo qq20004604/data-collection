@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+    <title>埋点系统（网站注册）</title>
+    <style>
+        * {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+        .row {
+            height: 30px;
+            line-height: 30px;
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .label {
+            display: inline-block;
+            height: 30px;
+            line-height: 30px;
+            font-weight: bold;
+            width: 80px;
+            text-align: right;
+            vertical-align: top;
+        }
+
+        .input {
+            height: 30px;
+            line-height: 30px;
+            width: 300px;
+            border: 1px solid #666;
+            border-radius: 7px;
+            padding: 0 20px;
+            vertical-align: top;
+        }
+
+        .input:focus {
+            outline: none;
+        }
+
+        #register {
+            margin-left: 35px;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+
+</div>
+
+<script id="level-user" type="text/html">
+    <div>
+        <div class="row">
+            <label>
+                <span class="label">网站名：</span>
+                <input type="text" class="input" id="site_name">
+            </label>
+        </div>
+        <div class="row">
+            <label>
+                <span class="label">站点描述：</span>
+                <input type="text" class="input" id="site_description">
+            </label>
+        </div>
+        <div class="row">
+            <button id="register">注册</button>
+        </div>
+    </div>
+</script>
+
+<script>
+    const Post = function (url, data) {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: data
+            }).then(result => {
+                if (result.IsSuccessed) {
+                    console.log('%c%s', 'color:green', url, result);
+                    resolve(result.data)
+                } else {
+                    console.log('%c%s', 'color:red', url, result);
+                    reject(result.Message)
+                }
+            }).catch(err => {
+                console.log('%c%s', 'color:red', url, err);
+                reject(err ? err : '内部错误')
+            })
+        })
+    }
+
+    const userInit = function () {
+        const $siteName = $("#site_name");
+        const $siteDescription = $("#site_description");
+        let _submitting = false;
+        let _success = false;
+
+        $("#register").unbind().click(() => {
+            if (_success) {
+                alert("已经注册成功啦，不要再注册了");
+            }
+            let siteName = $siteName.val();
+            let siteDescription = $siteDescription.val();
+            if (!siteName) {
+                return alert('你有信息未填写，请填写先');
+            }
+
+            if (siteName.length > 20) {
+                return alert('站点名最长20位');
+            } else if (siteDescription.length > 100) {
+                return alert('站点描述最长100个字符');
+            }
+            if (_submitting) {
+                return;
+            }
+            _submitting = true;
+            Post('/Site/Add', {
+                SiteName: siteName,
+                SiteDescription: siteDescription,
+            }).then(result => {
+                if (result.Success) {
+                    _success = true;
+                    alert(result.Msg)
+                } else {
+                    _submitting = false;
+                    alert(result.Msg)
+                }
+            }).catch(err => {
+                _submitting = false;
+                alert(err)
+            })
+        })
+    }
+    $(function () {
+        // 套用用户注册模板
+        const $Container = $("#app");
+        const $levelUser = $("#level-user");
+        $Container.html($levelUser.html());
+
+        userInit();
+    })
+</script>
+
+</body>
+</html>
